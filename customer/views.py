@@ -42,32 +42,44 @@ class ProviderProfile(APIView):
 
 
 class RequestProvider(APIView):
-    def post(self,request, format=None):
+    def post(self,request,pk, format=None):
+        provider = Provider.objects.get(pk=pk)
         serializer = RequestProviderSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(provider=provider,user=request.user,state=RequestState.objects.get(pk=1))
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         return Response(serializer.error,status=status.HTTP_400_BAD_REQUEST)
 
+
+
 class CommentProvider(APIView):
     def post(self,request,pk, format=None):
+        provider = Provider.objects.get(pk=pk)
         serializer= CommentProviderSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user, provider=provider)
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
 
-class MyServices(APIView):
-    def get(self,request,format=None):
-        provider = Provider.objects.all()
-        serializer =  MyProviderSerializer(provider,many=True)
-        return Response(serializer.data)
 
 
+
+
+
+
+
+#class MyServices(APIView):
+#    def get(self,request,format=None):
+#        provider = Provider.objects.all()
+#        serializer =  MyServicesSerializer(provider,many=True)
+#        return Response(serializer.data) """
+
+from rest_framework.permissions import IsAuthenticated
 class MyRequests(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request, format=None):
         request = Request.objects.filter(user=request.user)
-        serializer =  MyRequestsSerializer(request,many=True)
+        serializer =  MyRequestSerializer(request,many=True)
         return Response(serializer.data)
 
 class MyRequest(APIView):
@@ -78,15 +90,16 @@ class MyRequest(APIView):
 
 
 class MyRequestMessages(APIView):
-    def get(self,request,format=None):
+    def get(self,request,pk, format=None):
         messages = Message.objects.filter(request=pk) #verify that request belong the user
-        serializer = MessageSerializer(messages, many=True)
+        serializer = RequestMessageSerializer(messages, many=True)
         return Response(serializer.data)
 
-    def post(self,request, format=None):
-        serializer =  MessageSerializer(data=request.data)
+    def post(self,request,pk, format=None):
+        req = Request.objects.get(pk=pk)
+        serializer =  RequestMessageSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user, request= req)
             return Response(serializer.data, status= status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
@@ -95,7 +108,7 @@ class MyRequestState(APIView):
     #to change the state of states
     def put(self,request,pk, format=None):
         request = Request.objects.get(pk=pk)
-        serializer = MyRequestState(request,data=request.data)
+        serializer = MyRequestStateSerializer(request,data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
