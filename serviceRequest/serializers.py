@@ -6,7 +6,26 @@ from provider.models import *
 
 
 
+class ProviderSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Provider 
+        fields = []
 
+class ProviderProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Provider
+        fields = []
+
+class RequestProviderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =  Request 
+        fields = []
+
+class CommentProviderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment 
+        fields = []
+class 
 
 
 class UserSerializer(serializers.ModelSerializer):
